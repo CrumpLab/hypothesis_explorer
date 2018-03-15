@@ -1,4 +1,6 @@
 library(hypothesisr)
+library(ggplot2)
+library(plotly)
 
 server <- function(input, output, session) {
 
@@ -8,7 +10,7 @@ server <- function(input, output, session) {
 
   output$keepAlive <- renderText({
     req(input$count)
-    paste(" ", input$count)
+    paste(" ")
   })
 
 
@@ -36,6 +38,21 @@ server <- function(input, output, session) {
     data <- data[ , input$show_vars, drop=FALSE]
     return(data)
   }, options = list(pageLength = 10))
+
+  output$plot <- renderPlotly({
+    data <- data()
+    data <-subsetData(data)
+    split_pages<-strsplit(data$uri,split="/")
+    data$uri<-unlist(lapply(split_pages,function(x) {a<-length(x)
+      return(x[a])}))
+    #data <- data[ , input$show_vars, drop=FALSE]
+    #ggplot(data,aes(x=as.Date(created),y=uri))+geom_point()
+    plot_ly(data, x = ~(as.numeric(as.Date(created))* 24 * 60 * 60 * 1000), y= ~uri, type = "scatter", mode="markers", text=~user, color=~votes) %>%
+      layout(xaxis=list(type="date",
+                        title="Date Created"),
+             margin=list(l=200))
+
+  })
 
 
   output$topDocs <- renderTable({
@@ -144,73 +161,6 @@ server <- function(input, output, session) {
 
 
 
-
-
-  # loadHS <- function (uri) {
-  #   require(hypothesisr)
-  #
-  #   raw.data<-hs_search_all(custom = list(uri.parts = uri))
-  #   raw.data[,c("highlighted","prefix","suffix","type")]<-NA
-  #
-  #   ## loop through rows:
-  #   for (i in 1:nrow(raw.data)){
-  #     #annotation
-  #     t<-raw.data$target[[i]]$selector[[1]]
-  #     if(!is.null(t$exact)){
-  #       raw.data$highlighted[i]<-t$exact[!is.na(gsub("\n","",t$exact))]
-  #     } else {
-  #       raw.data$highlighted[i]<- NA
-  #
-  #     }
-  #
-  #     #prefix
-  #     if(!is.null(t$prefix)){
-  #       raw.data$prefix[i]<-t$prefix[!is.na(gsub("\n","",t$prefix))]
-  #     } else {
-  #       raw.data$prefix[i]<- NA
-  #     }
-  #
-  #
-  #     #suffix
-  #     if(!is.null(t$suffix)){
-  #       raw.data$suffix[i]<-t$suffix[!is.na(gsub("\n","",t$suffix))]
-  #     } else {
-  #       raw.data$suffix[i]<- NA
-  #     }
-  #
-  #
-  #     #type
-  #     #if annotation is filled...
-  #     if(!is.na(raw.data$highlighted[i])){
-  #       raw.data$type[i] <- "annotation"
-  #       #else if there's a reference...
-  #     } else if (!is.null(raw.data$references[[i]])){
-  #       raw.data$type[i] <- "reply"
-  #       #else label as page note
-  #     } else {
-  #       raw.data$type[i] <- "page note"
-  #     }
-  #
-  #     #clean-up tags
-  #     if (length(raw.data$tags[[i]]) > 0){
-  #       for(n in 1:length(raw.data$tags[[i]]))
-  #         raw.data$tags[[i]][n]<-tolower(gsub("[[:punct:]]", "", raw.data$tags[[i]][n]))
-  #     } else {
-  #       raw.data$tags[[i]] <- "no tag"
-  #     }
-  #
-  #     #clean-up username
-  #     raw.data$user[i]<-gsub("acct:", "", raw.data$user[i])
-  #     raw.data$group[i]<-gsub("[[:punct:]]", "",raw.data$group[i])
-  #   }
-  #
-  #
-  #   clean.data<-raw.data[,c("created","updated","user","user_info.display_name","uri","document.title","group","type", "tags","hidden","flagged","id","references","links.html","links.incontext","text","prefix","highlighted","suffix")]
-  #
-  #   rm(raw.data)
-  #   return(clean.data)
-  # }
-
 loadHS <- function (uri) {
     require(hypothesisr)
 
@@ -293,4 +243,5 @@ loadHS <- function (uri) {
 
 
 }
+
 

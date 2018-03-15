@@ -95,10 +95,13 @@ ui <- fluidPage(
 
                            br(),
                            br(),
-                           dataTableOutput("dataset"))
+                           dataTableOutput("dataset")),
+
+
+                  tabPanel("Plots",
+                           plotlyOutput("plot"))
 
       ) #tabsetPanel close
-
 
 
       # plotOutput("plot")
