@@ -1,5 +1,4 @@
 library(hypothesisr)
-library(ggplot2)
 library(plotly)
 
 server <- function(input, output, session) {
@@ -45,8 +44,6 @@ server <- function(input, output, session) {
     split_pages<-strsplit(data$uri,split="/")
     data$uri<-unlist(lapply(split_pages,function(x) {a<-length(x)
       return(x[a])}))
-    #data <- data[ , input$show_vars, drop=FALSE]
-    #ggplot(data,aes(x=as.Date(created),y=uri))+geom_point()
     plot_ly(data, x = ~(as.numeric(as.Date(created))* 24 * 60 * 60 * 1000), y= ~uri, type = "scatter", mode="markers", text=~user, color=~votes) %>%
       layout(xaxis=list(type="date",
                         title="Date Created"),
